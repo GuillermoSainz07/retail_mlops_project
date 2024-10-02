@@ -12,3 +12,4 @@ scikit-learn==1.5.2
 seaborn==0.13.2
 SQLAlchemy==2.0.35
 fastapi
+ipykernel
