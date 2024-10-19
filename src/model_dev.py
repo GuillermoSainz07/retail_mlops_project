@@ -70,6 +70,20 @@ class BaseLineModel(Model):
             model.register_model(model_uri, self.model_name)
 
 
+class XGBForecaster(Model):
+    def __init__(self,
+                 model_name:str,
+                 run_id:str,
+                 name_experiment_intance:str):
+        super().__init__(model_name=model_name,
+                         run_id=run_id,
+                         name_experiment_intance=name_experiment_intance)
+        
+    def track_model(self):
+        pass
+    def train():
+        pass
+
 
 
         
