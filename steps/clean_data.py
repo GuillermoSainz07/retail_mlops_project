@@ -5,9 +5,7 @@ from .ingest_data import features, sales, stores
 from typing import Dict
 from typing_extensions import Annotated
 
-def clean_data_step() -> Dict[str,Annotated[tuple,'train_y, test_y'],
-                              str,Annotated[tuple,'train_future_cov, test_future_cov'],
-                              str,Annotated[tuple,'train_past_cov, test_past_cov']]:
+def clean_data_step() -> Dict[str,tuple]:
     """
     This function is used to clean, preprocessing and split the data.
     Returns:

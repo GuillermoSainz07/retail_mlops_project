@@ -45,20 +45,23 @@ class ModelEvaluation:
                 'cv_metric':cv_metric}
         
         
-        make_report(metrics)
+        #make_report(metrics)
 
-    def make_backtest_plot(self) -> None:
+    def make_backtest_plot(self,
+                           past_cov_ts:TimeSeries,
+                           fut_cov_ts:TimeSeries) -> None:
+
         self.historical_forecast = self.model(series=self.y_all,
-                                              future_covariates=self.future_cov_ts,
-                                              past_covariates=self.past_cov_ts,
+                                              future_covariates=past_cov_ts,
+                                              past_covariates=past_cov_ts,
                                               start=0.5,
                                               forecast_horizon=10, 
                                               retrain=True,
                                               last_points_only=False)
         
         sum(*[self.historical_forecast]).plot()
-        plt.savefig("backtest_plot.png")
-        plt.close()
+        #plt.savefig("backtest_plot.png")
+        #plt.close()
 
     def make_error_distribution_plot(self) -> None:
         backtest_xgb = self.model.backtest(series=self.y_all,
@@ -69,5 +72,5 @@ class ModelEvaluation:
         
         means_of_metrics = [np.mean(metric) for metric in backtest_xgb]
         plt.hist(means_of_metrics)
-        plt.savefig("error_dist_plot.png")
-        plt.close()
+        #plt.savefig("error_dist_plot.png")
+        #plt.close()

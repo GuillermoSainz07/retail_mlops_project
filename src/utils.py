@@ -47,9 +47,7 @@ def make_plots() -> None:
 def train_test_timeseries(y:TimeSeries,
                           future_cov:TimeSeries=None,
                           past_cov:TimeSeries=None,
-                          train_size:int=0.80)-> Dict[str,Annotated[tuple,'train_y, test_y'],
-                                                      str,Annotated[tuple,'train_future_cov, test_future_cov'],
-                                                      str,Annotated[tuple,'train_past_cov, test_past_cov']]:
+                          train_size:int=0.80)-> Dict[str,tuple]:
     """
     This function help us to split data into train, test, and validation set
     Args:

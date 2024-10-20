@@ -17,8 +17,9 @@ def model_training():
     fut_cov_train, fut_cov_test = dataset['past_cov']
     
     model = XGBForecaster()
-    model.track_model()
-    model.train()
+    model.train(y_train,
+                past_cov_train,
+                fut_cov_train)
 
     return model
 

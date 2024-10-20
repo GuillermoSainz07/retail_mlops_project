@@ -2,7 +2,8 @@ import mlflow
 from abc import ABC, abstractmethod
 
 from darts.models.forecasting.baselines import NaiveDrift
-
+from darts.models.forecasting.xgboost import XGBModel
+from darts.timeseries import TimeSeries
 class Model(ABC):
 
     def __init__(self,
@@ -71,20 +72,24 @@ class BaseLineModel(Model):
 
 
 class XGBForecaster(Model):
-    def __init__(self,
-                 model_name:str,
-                 run_id:str,
-                 name_experiment_intance:str):
-        super().__init__(model_name=model_name,
-                         run_id=run_id,
-                         name_experiment_intance=name_experiment_intance)
         
     def track_model(self):
         pass
-    def train():
-        pass
+    def train(y_train:TimeSeries,
+              past_cov_train:TimeSeries,
+              fut_cov_train:TimeSeries):
+        
+        model = XGBModel(lags=[-2,-5],
+                 lags_future_covariates=[0],
+                 lags_past_covariates=[-1,-2,-5])
+        
+        model.fit(series=y_train,
+                  past_covariates=past_cov_train,
+                  future_covariates=fut_cov_train)
+        
+        model.save("../models/xgb_model.pkl")
 
-
+        return model
 
         
         

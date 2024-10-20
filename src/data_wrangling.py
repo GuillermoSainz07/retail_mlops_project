@@ -99,9 +99,7 @@ class DataSplitStrategy(DataWrangling):
     """
     Class for data splitting strategy
     """
-    def handle_data(self, data: pd.DataFrame) -> Dict[str,Annotated[tuple,'train_y, test_y'],
-                                                      str,Annotated[tuple,'train_future_cov, test_future_cov'],
-                                                      str,Annotated[tuple,'train_past_cov, test_past_cov']]:
+    def handle_data(self, data: pd.DataFrame) -> Dict[str,tuple]:
         """
         Method to split data into train, val, test data
         Args:
