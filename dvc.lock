@@ -1,0 +1,66 @@
+schema: '2.0'
+stages:
+  inegst_and_clean_data:
+    cmd: python steps/clean_data.py
+    deps:
+    - path: src/data_wrangling.py
+      hash: md5
+      md5: 3f67eecad0ed6dfca85feabeb17b1a48
+      size: 5483
+    - path: steps/ingest_data.py
+      hash: md5
+      md5: 34a67d0e78a94d67843c2e8e47d51387
+      size: 712
+    outs:
+    - path: data/clean/clean_data.csv
+      hash: md5
+      md5: 75768436db9991bb8f1a960bf91dfea5
+      size: 411704
+  train_model:
+    cmd: python steps/model_train.py
+    deps:
+    - path: data/clean/clean_data.csv
+      hash: md5
+      md5: 75768436db9991bb8f1a960bf91dfea5
+      size: 411704
+    - path: src/data_wrangling.py
+      hash: md5
+      md5: 3f67eecad0ed6dfca85feabeb17b1a48
+      size: 5483
+    - path: src/model_dev.py
+      hash: md5
+      md5: 046c093253a344aa67526da7232ae732
+      size: 3536
+    outs:
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: 05d33b7a2beb1a4a77ced37c5df92537
+      size: 400723
+  model_evaluation:
+    cmd: python steps/model_evaluation.py
+    deps:
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: 05d33b7a2beb1a4a77ced37c5df92537
+      size: 400723
+    - path: src/model_evaluation.py
+      hash: md5
+      md5: 7cd6718ae9d4abf11ffd66fc03da0bb9
+      size: 4230
+    - path: steps/model_train.py
+      hash: md5
+      md5: 1b8f865203639860de11744d60354d7a
+      size: 1505
+    outs:
+    - path: backtest_plot.png
+      hash: md5
+      md5: ba8eda04ef086e5f17afef33d0745bb7
+      size: 48157
+    - path: error_dist_plot.png
+      hash: md5
+      md5: 2a36945c9cd48688e2cc9901f9ce7574
+      size: 10778
+    - path: report_metrics.json
+      hash: md5
+      md5: 2b00858b7974ef08090d47838b0b239d
+      size: 136

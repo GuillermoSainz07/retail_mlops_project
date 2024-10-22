@@ -1,0 +1,5 @@
+outs:
+- md5: 280094e432bd738aa1c42948ff65b8d8
+  size: 577
+  hash: md5
+  path: stores_data_set.csv

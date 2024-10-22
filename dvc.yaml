@@ -1,0 +1,26 @@
+stages:
+  inegst_and_clean_data:
+    cmd: python steps/clean_data.py
+    deps:
+    - steps/ingest_data.py
+    - src/data_wrangling.py
+    outs:
+    - data/clean/clean_data.csv
+  train_model:
+    cmd: python steps/model_train.py
+    deps:
+    - src/model_dev.py
+    - src/data_wrangling.py
+    - data/clean/clean_data.csv
+    outs:
+    - models/xgb_model.pkl
+  model_evaluation:
+    cmd: python steps/model_evaluation.py
+    deps:
+    - models/xgb_model.pkl
+    - steps/model_train.py
+    - src/model_evaluation.py
+    outs:
+    - report_metrics.json
+    - backtest_plot.png
+    - error_dist_plot.png

@@ -164,3 +164,6 @@ cython_debug/
 data/raw/features_data_set.csv
 data/raw/sales_data_set.csv
 data/raw/stores_data_set.csv
+/report_metrics.json
+/backtest_plot.png
+/error_dist_plot.png
