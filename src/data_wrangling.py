@@ -6,7 +6,7 @@ import logging
 from typing import Union, Tuple, Dict
 from typing_extensions import Annotated
 
-from utils import train_test_timeseries
+from .utils import train_test_timeseries
 
 
 logging.basicConfig(level=logging.INFO,
@@ -62,7 +62,7 @@ class DataPreproStrategy(DataWrangling):
                                                         'B':1,
                                                         'C':2})
             
-            new_dataset.to_csv('../data/clean/clean_data.csv')
+            new_dataset.to_csv('data/clean/clean_data.csv')
 
             logging.info("Preproccessing done")
 
@@ -76,8 +76,9 @@ class DataFeatureEngineering(DataWrangling):
     """
     Class for data transformation strategy
     """
-    def handle_data(self, data: pd.DataFrame) -> TimeSeries:
+    def handle_data(self, data: pd.DataFrame) -> pd.DataFrame:
         try:
+            data['Date'] = pd.to_datetime(data.Date)
             data['ma1_sales'] = data.Weekly_Sales.rolling(window=2).mean() 
             data['ma2_sales'] = data.Weekly_Sales.rolling(window=3).mean()
             data['ma5_sales'] = data.Weekly_Sales.rolling(window=5).mean()
@@ -99,7 +100,7 @@ class DataSplitStrategy(DataWrangling):
     """
     Class for data splitting strategy
     """
-    def handle_data(self, data: pd.DataFrame) -> Dict[str,tuple]:
+    def handle_data(self, data: pd.DataFrame) -> Dict[str,tuple[TimeSeries]]:
         """
         Method to split data into train, val, test data
         Args:

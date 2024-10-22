@@ -23,12 +23,14 @@ class ModelEvaluation:
         self.y_all = y_all
 
     def write_metrics(self) -> None:
-        predictions = self.model.predict(series=self.y_train,
-                                past_covariables=self.past_cov_test,
-                                future_covariables=self.fut_cov_test)
+        predictions = self.model.predict(
+                                n=len(self.y_test[0]),
+                                series=self.y_train,
+                                past_covariates=self.past_cov_test,
+                                future_covariates=self.fut_cov_test)
     
-        total_sales_prediction = sum(predictions['Weekly_Sales'])
-        total_sales_real = sum(self.y_test['Weekly_Sales'])
+        total_sales_prediction = sum(predictions[1:])
+        total_sales_real = sum(self.y_test[1:])
 
         mse_metric = mse(actual_series=total_sales_real,
                         pred_series=total_sales_prediction)
@@ -43,7 +45,7 @@ class ModelEvaluation:
                 'rmse_metric':rmse_metric,
                 'mape_metric':mape_metric,
                 'cv_metric':cv_metric}
-        
+        print(metrics)
         
         #make_report(metrics)
 
@@ -51,17 +53,33 @@ class ModelEvaluation:
                            past_cov_ts:TimeSeries,
                            fut_cov_ts:TimeSeries) -> None:
 
-        self.historical_forecast = self.model(series=self.y_all,
-                                              future_covariates=past_cov_ts,
+        self.historical_forecast = self.model.historical_forecasts(series=self.y_all,
+                                              future_covariates=fut_cov_ts,
                                               past_covariates=past_cov_ts,
                                               start=0.5,
                                               forecast_horizon=10, 
-                                              retrain=True,
+                                              retrain=False,
                                               last_points_only=False)
-        
-        sum(*[self.historical_forecast]).plot()
-        #plt.savefig("backtest_plot.png")
-        #plt.close()
+        forecaste_plots = []
+
+        for j in range(len(self.historical_forecast[0])):
+            for i in range(len(self.historical_forecast)):
+                if i == 0:
+                    plot = self.historical_forecast[i][j]
+                else:
+                    plot += self.historical_forecast[i][j]
+
+            forecaste_plots.append(plot)
+
+        sum(self.y_all[1:]).plot('Real Values')
+        for p in forecaste_plots:
+            p.plot()
+            legend = plt.legend()  # Crea la leyenda
+            legend.set_visible(False)
+
+        plt.title('Historical forecast / Backtest')
+        plt.savefig("backtest_plot.png")
+        plt.close()
 
     def make_error_distribution_plot(self) -> None:
         backtest_xgb = self.model.backtest(series=self.y_all,
@@ -72,5 +90,6 @@ class ModelEvaluation:
         
         means_of_metrics = [np.mean(metric) for metric in backtest_xgb]
         plt.hist(means_of_metrics)
-        #plt.savefig("error_dist_plot.png")
-        #plt.close()
+        plt.title('Rmse Distribution')
+        plt.savefig("error_dist_plot.png")
+        plt.close()

@@ -1,11 +1,12 @@
 from src.data_wrangling import (DataPreproStrategy, DataSplitStrategy,
                                 DataFeatureEngineering)
-from .ingest_data import features, sales, stores
-
+from ingest_data import ingest_data_step
+import pandas as pd
 from typing import Dict
-from typing_extensions import Annotated
 
-def clean_data_step() -> Dict[str,tuple]:
+def clean_data_step(features:pd.DataFrame,
+                    sales:pd.DataFrame,
+                    stores:pd.DataFrame) -> None:
     """
     This function is used to clean, preprocessing and split the data.
     Returns:
@@ -13,23 +14,18 @@ def clean_data_step() -> Dict[str,tuple]:
     """
     # Data Preprocessing
     preprocessor = DataPreproStrategy()
-    df = preprocessor.fit(features, sales, stores)
-
-    # Feature Engineering
-    feature_engineering = DataFeatureEngineering()
-    df = feature_engineering.handle_data(df)
-
-    # Split Data
-    splitter = DataSplitStrategy()
-    dataset = splitter.handle_data(df)
-
-    return dataset
+    preprocessor.handle_data(features, sales, stores)
 
 if __name__ == "__main__":
-    dataset = clean_data_step()
+    features, sales, stores = ingest_data_step(features_path='data/raw/features_data_set.csv',
+                                               sales_path='data/raw/sales_data_set.csv',
+                                               stores_path='data/raw/stores_data_set.csv')
+    clean_data_step(features,
+                    sales,
+                    stores)
 
 
-
+ 
 
 
     

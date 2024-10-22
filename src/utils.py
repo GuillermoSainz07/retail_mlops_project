@@ -10,40 +10,6 @@ def make_report(metrics:dict) -> None:
     with open('report_metrics.json', 'w') as report:
         json.dump(metrics, report)
 
-def write_metrics(model:XGBModel,
-                  y_train:TimeSeries,
-                  y_test:TimeSeries,
-                  past_cov_test:TimeSeries,
-                  fut_cov_test:TimeSeries) -> dict:
-    """
-    This function should return a dictionary with metric
-    """
-    predictions = model.predict(series=y_train,
-                                past_covariables=past_cov_test,
-                                future_covariables=fut_cov_test)
-    
-    total_sales_prediction = sum(predictions['Weekly_Sales'])
-    total_sales_real = sum(y_test['Weekly_Sales'])
-
-    mse_metric = mse(actual_series=total_sales_real,
-                     pred_series=total_sales_prediction)
-    rmse_metric = rmse(actual_series=total_sales_real,
-                     pred_series=total_sales_prediction)
-    mape_metric = mape(actual_series=total_sales_real,
-                     pred_series=total_sales_prediction)
-    cv_metric = coefficient_of_variation(actual_series=total_sales_real,
-                     pred_series=total_sales_prediction)
-    
-    metrics = {'mse_metric':mse_metric,
-               'rmse_metric':rmse_metric,
-               'mape_metric':mape_metric,
-               'cv_metric':cv_metric}
-    
-    return metrics
-
-def make_plots() -> None:
-    pass
-
 def train_test_timeseries(y:TimeSeries,
                           future_cov:TimeSeries=None,
                           past_cov:TimeSeries=None,

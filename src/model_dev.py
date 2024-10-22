@@ -1,9 +1,16 @@
 import mlflow
 from abc import ABC, abstractmethod
+from typing import List
+import logging
 
 from darts.models.forecasting.baselines import NaiveDrift
 from darts.models.forecasting.xgboost import XGBModel
 from darts.timeseries import TimeSeries
+
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s: %(message)s')
+
 class Model(ABC):
 
     def __init__(self,
@@ -71,25 +78,31 @@ class BaseLineModel(Model):
             model.register_model(model_uri, self.model_name)
 
 
-class XGBForecaster(Model):
+class XGBForecaster:
         
     def track_model(self):
         pass
-    def train(y_train:TimeSeries,
-              past_cov_train:TimeSeries,
-              fut_cov_train:TimeSeries):
+    def train(self,
+              y_train:List[TimeSeries],
+              past_cov_train:List[TimeSeries],
+              fut_cov_train:List[TimeSeries]):
         
         model = XGBModel(lags=[-2,-5],
                  lags_future_covariates=[0],
                  lags_past_covariates=[-1,-2,-5])
-        
-        model.fit(series=y_train,
-                  past_covariates=past_cov_train,
-                  future_covariates=fut_cov_train)
-        
-        model.save("../models/xgb_model.pkl")
+        try:
+            model.fit(series=y_train,
+                    past_covariates=past_cov_train,
+                    future_covariates=fut_cov_train)
+            logging.info('Model Trained')
 
-        return model
+            model.save("models/xgb_model.pkl")
+
+            return model
+
+        except Exception as e:
+            logging.error(f"Error training model: {e}")
+            raise e
 
         
         

@@ -18,8 +18,3 @@ def ingest_data_step(features_path:str,
         logging.error(f"Error ingesting data from {features_path}, {sales_path}, {stores_path}: {str(e)}")
         raise e
     
-if __name__ == '__main__':
-    features, sales, stores = ingest_data_step(features_path='../data/raw/features_data_set.csv',
-                                               sales_path='../data/raw/sales_data_set.csv',
-                                               stores_path='../data/raw/stores_data_set.csv')
-    

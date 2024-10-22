@@ -1,7 +1,9 @@
 import mlflow 
-from .clean_data import dataset
+from typing import Dict
 from darts.models.forecasting.xgboost import XGBModel
 from src.model_dev import XGBForecaster
+from src.data_wrangling import DataFeatureEngineering, DataSplitStrategy
+import pandas as pd
 
 ### La longitud del vector de covariables pasadas que deberias utilizar
 ### para predecir n puntos en el futuro esta dada por n + | min (lags) |
@@ -10,21 +12,33 @@ from src.model_dev import XGBForecaster
 ### 1 punto en el futuro, y tu lag maximo es de 3, deberias pasar un vector
 ### de longitud 1 + 3 = 4
 
+def feature_engineering_step(df:pd.DataFrame)-> pd.DataFrame:
+    fe_object = DataFeatureEngineering()
+    data = fe_object.handle_data(df)
 
-def model_training():
+    return data
+
+def split_step(df:pd.DataFrame) -> Dict:
+    splitter = DataSplitStrategy()
+    data = splitter.handle_data(df)
+
+    return data
+
+def model_training(dataset:Dict[str,tuple]) -> None:
     y_train, y_test = dataset['y_timeseries']
-    past_cov_train, past_cov_test = dataset['future_cov']
-    fut_cov_train, fut_cov_test = dataset['past_cov']
-    
-    model = XGBForecaster()
-    model.train(y_train,
-                past_cov_train,
-                fut_cov_train)
+    past_cov_train, past_cov_test = dataset['past_cov']
+    fut_cov_train, fut_cov_test = dataset['future_cov']
 
-    return model
+    model = XGBForecaster()
+    model.train(y_train=y_train,
+                past_cov_train=past_cov_train,
+                fut_cov_train=fut_cov_train)
 
 if __name__ == '__main__':
-    model = model_training()
+    data = pd.read_csv('data/clean/clean_data.csv')
+    data = feature_engineering_step(data)
+    dataset = split_step(data)
+    model_training(dataset)
 
 
 
