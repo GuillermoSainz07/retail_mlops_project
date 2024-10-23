@@ -46,7 +46,7 @@ jobs:
            set +H
            echo "![Historical Forescast /  Backtest](backtest_plot.png)" >> report.md
            echo "![Error (RMSE) distribution plot](error_dist_plot.png)" >> report.md
-           cml comment create model_eval_report.md
+           cml comment create report.md
            set -H
 
   
