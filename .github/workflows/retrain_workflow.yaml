@@ -24,6 +24,9 @@ jobs:
       - name: Intall dependencies
         run: pip install -r requirements.txt
 
+      - name: Install own modules
+        run: pip install -e .
+
       - name: Pull data
         env:
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_KEY_ID2}}
