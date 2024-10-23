@@ -1,0 +1,4 @@
+[core]
+    remote = my_s3
+['remote "my_s3"']
+    url = s3://retail-artifacts

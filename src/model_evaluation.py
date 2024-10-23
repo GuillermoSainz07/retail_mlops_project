@@ -4,7 +4,10 @@ from darts.metrics.metrics import mse,rmse,mape,coefficient_of_variation
 import matplotlib.pyplot as plt
 import numpy as np
 from .utils import make_report
+import logging
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s: %(message)s')
 
 class ModelEvaluation:
     def __init__(self,
@@ -23,31 +26,34 @@ class ModelEvaluation:
         self.y_all = y_all
 
     def write_metrics(self) -> None:
-        predictions = self.model.predict(
-                                n=len(self.y_test[0]),
-                                series=self.y_train,
-                                past_covariates=self.past_cov_test,
-                                future_covariates=self.fut_cov_test)
-    
-        total_sales_prediction = sum(predictions[1:])
-        total_sales_real = sum(self.y_test[1:])
+        try:
+            predictions = self.model.predict(
+                                    n=len(self.y_test[0]),
+                                    series=self.y_train,
+                                    past_covariates=self.past_cov_test,
+                                    future_covariates=self.fut_cov_test)
+        
+            total_sales_prediction = sum(predictions[1:])
+            total_sales_real = sum(self.y_test[1:])
 
-        mse_metric = mse(actual_series=total_sales_real,
-                        pred_series=total_sales_prediction)
-        rmse_metric = rmse(actual_series=total_sales_real,
-                        pred_series=total_sales_prediction)
-        mape_metric = mape(actual_series=total_sales_real,
-                        pred_series=total_sales_prediction)
-        cv_metric = coefficient_of_variation(actual_series=total_sales_real,
-                        pred_series=total_sales_prediction)
-        
-        metrics = {'mse_metric':mse_metric,
-                'rmse_metric':rmse_metric,
-                'mape_metric':mape_metric,
-                'cv_metric':cv_metric}
-        print(metrics)
-        
-        #make_report(metrics)
+            mse_metric = mse(actual_series=total_sales_real,
+                            pred_series=total_sales_prediction)
+            rmse_metric = rmse(actual_series=total_sales_real,
+                            pred_series=total_sales_prediction)
+            mape_metric = mape(actual_series=total_sales_real,
+                            pred_series=total_sales_prediction)
+            cv_metric = coefficient_of_variation(actual_series=total_sales_real,
+                            pred_series=total_sales_prediction)
+            
+            metrics = {'mse_metric':mse_metric,
+                    'rmse_metric':rmse_metric,
+                    'mape_metric':mape_metric,
+                    'cv_metric':cv_metric}
+            logging.info(f'Metrics Calculated: {metrics}')
+            make_report(metrics)
+        except Exception as e:
+            logging.error(f'Error in calculating metrics: {e}')
+            raise e
 
     def make_backtest_plot(self,
                            past_cov_ts:TimeSeries,
