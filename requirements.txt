@@ -14,3 +14,4 @@ SQLAlchemy==2.0.35
 fastapi
 ipykernel
 dvc[s3]
+plotly
