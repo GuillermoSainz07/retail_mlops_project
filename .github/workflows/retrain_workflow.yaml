@@ -26,11 +26,11 @@ jobs:
 
       - name: Pull data
         env:
-          AWS_ACCESS_KEY_ID: ${{secrets.AWS_KEY_ID_DVC}}
-          AWS_SECRECT_ACCESS_KEY: ${{secrets.AWS_SECRECT_KEY_DVC}}
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_KEY_ID2}}
+          AWS_SECRECT_ACCESS_KEY: ${{secrets.AWS_SECRECT_KEY2}}
         run: |
           
-          dvc pull -r origin
+          dvc pull -r my_s3
         
       - name: Run dvc pipeline
         run: dvc repro
