@@ -27,7 +27,7 @@ jobs:
       - name: Pull data
         env:
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_KEY_ID2}}
-          AWS_SECRECT_ACCESS_KEY: ${{secrets.AWS_SECRECT_KEY2}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRECT_KEY2}}
         run: |
           
           dvc pull -r my_s3
