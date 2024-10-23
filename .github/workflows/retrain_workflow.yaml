@@ -42,7 +42,7 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
-           cat metrics.json
+           cat report_metrics.json
            set +H
            echo "![Historical Forescast /  Backtest](backtest_plot.png)" >> report.md
            echo "![Error (RMSE) distribution plot](error_dist_plot.png)" >> report.md
