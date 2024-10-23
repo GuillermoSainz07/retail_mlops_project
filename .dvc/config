@@ -2,4 +2,3 @@
     remote = my_s3
 ['remote "my_s3"']
     url = s3://retail-artifacts
-    endpointurl = https://dagshub.com/GuillermoSainz07/retail_mlops_project.s3
