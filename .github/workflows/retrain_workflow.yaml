@@ -42,10 +42,12 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
-           cat report_metrics.json
+           cat report_metrics.json >> report.md
            set +H
-           echo "![Historical Forescast /  Backtest](../backtest_plot.png)" >> report.md
-           echo "![Error (RMSE) distribution plot](../error_dist_plot.png)" >> report.md
+           echo '## Historical Forecast' >> report.md
+           cml publish ./backtest_plot.png --md >> report.md
+           echo '## Error (RMSE) Distribution' >> report.md
+           cml publish ./error_dist_plot.png --md >> report.md
            cml comment create report.md
            set -H
 
