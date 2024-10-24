@@ -48,4 +48,15 @@ jobs:
            echo '## Error Distribution' >> report.md
            echo '![](../error_dist_plot.png "Error (RMSE) Distribution")' >> report.md
            cml comment create report.md
+
+      - name: Update data tracking
+        env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_KEY_ID2}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRECT_KEY2}}
+        run: |
+          dvc add data/features_data_set.csv
+          dvc add data/sales_data_set.csv
+          dvc add data/stores_data_set.csv
+          dvc commit 
+          dvc push -r my_s3
   
