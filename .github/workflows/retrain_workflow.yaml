@@ -43,12 +43,9 @@ jobs:
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
            cat report_metrics.json >> report.md
-           set +H
            echo '## Historical Forecast' >> report.md
-           cml comment "![Historical Forecast](./backtest_plot.png)" >> report.md
-           echo '## Error (RMSE) Distribution' >> report.md
-           cml comment "![Error (RMSE) Distribution](./error_dist_plot.png)" >> report.md
+           echo '![](./backtest_plot.png "Backtest plot")' >> report.md
+           echo '## Error Distribution' >> report.md
+           echo '![](./error_dist_plot.png "Error (RMSE) Distribution")' >> report.md
            cml comment create report.md
-           set -H
-
   
