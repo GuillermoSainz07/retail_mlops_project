@@ -45,9 +45,9 @@ jobs:
            cat report_metrics.json >> report.md
            set +H
            echo '## Historical Forecast' >> report.md
-           cml comment "![Historical Forecast](./backtest_plot.png)" --md >> report.md
+           cml comment "![Historical Forecast](./backtest_plot.png)" >> report.md
            echo '## Error (RMSE) Distribution' >> report.md
-           cml comment "![Error (RMSE) Distribution](./error_dist_plot.png)" --md >> report.md
+           cml comment "![Error (RMSE) Distribution](./error_dist_plot.png)" >> report.md
            cml comment create report.md
            set -H
 
