@@ -51,6 +51,7 @@ class ModelEvaluation:
                     'cv_metric':cv_metric}
             logging.info(f'Metrics Calculated: {metrics}')
             make_report(metrics)
+            return metrics
         except Exception as e:
             logging.error(f'Error in calculating metrics: {e}')
             raise e

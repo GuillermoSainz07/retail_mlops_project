@@ -7,6 +7,11 @@ from darts.models.forecasting.xgboost import XGBModel
 from src.model_evaluation import ModelEvaluation
 import pandas as pd
 import json
+import mlflow
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s [%(levelname)s] %(message)s')
 
 def evaluation_metrics() -> None:
     data = pd.read_csv('data/clean/clean_data.csv')
@@ -40,10 +45,24 @@ def evaluation_metrics() -> None:
                                           fut_cov_test,
                                           y_all)
     
-    evaluation_instance.write_metrics()
+    metrics = evaluation_instance.write_metrics()
+
     evaluation_instance.make_backtest_plot(past_cov_ts=past_cov_ts,
                                            fut_cov_ts=fut_cov_ts)
     evaluation_instance.make_error_distribution_plot()
+
+    with open('config.json', 'r') as config:
+        config_dict = json.load(config)
+    try:
+        import dagshub
+        dagshub.init(repo_owner='GuillermoSainz07', repo_name='retail_mlops_project', mlflow=True)
+        
+        with mlflow.start_run(run_id=config_dict["RUN_ID"]):
+            for metric_name, value in metrics.items():
+                mlflow.log_metric(metric_name, value)
+        logging.info('Log Metrics Done')
+    except Exception as e:
+        logging.error(f'Error logging metrics: {e}')
 
 if __name__ == '__main__':
     evaluation_metrics()
