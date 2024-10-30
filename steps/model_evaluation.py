@@ -63,6 +63,7 @@ def evaluation_metrics() -> None:
         with mlflow.start_run(run_id=config_dict["RUN_ID"]):
             for metric_name, value in metrics.items():
                 mlflow.log_metric(metric_name, value)
+                
         logging.info('Log Metrics Done')
         
     except Exception as e:
