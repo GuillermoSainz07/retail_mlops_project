@@ -26,6 +26,9 @@ class ModelEvaluation:
         self.y_all = y_all
 
     def write_metrics(self) -> None:
+        '''
+        Function to make and create metrics
+        '''
         try:
             predictions = self.model.predict(
                                     n=len(self.y_test[0]),
@@ -59,6 +62,9 @@ class ModelEvaluation:
     def make_backtest_plot(self,
                            past_cov_ts:TimeSeries,
                            fut_cov_ts:TimeSeries) -> None:
+        '''
+        Funtion to create back-test plots
+        '''
 
         self.historical_forecast = self.model.historical_forecasts(series=self.y_all,
                                               future_covariates=fut_cov_ts,
@@ -89,6 +95,9 @@ class ModelEvaluation:
         plt.close()
 
     def make_error_distribution_plot(self) -> None:
+        '''
+        Function to create distribution error plot
+        '''
         backtest_xgb = self.model.backtest(series=self.y_all,
                                    historical_forecasts=self.historical_forecast,
                                    metric=rmse,

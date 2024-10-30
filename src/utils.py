@@ -21,7 +21,10 @@ def train_test_timeseries(y:TimeSeries,
         future_cov: Future covariables that actually known in present
         past_cov: Covariables that we have to use their past values because we dont known their future value
     Return:
-        Dicctionary with data
+        Dicctionary with the following form:
+        {'y_timeseries':(train_y, test_y),
+            'future_cov':(train_future_cov,test_future_cov),
+            'past_cov':(train_past_cov, test_past_cov)}
     """
     
     train_y, test_y = [],[]

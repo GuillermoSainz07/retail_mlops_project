@@ -3,6 +3,9 @@ from darts.timeseries import TimeSeries
 
 
 class DartsModelWrapper(mlflow.pyfunc.PythonModel):
+    '''
+    Class needed to track the model in mlflow
+    '''
     def __init__(self, model):
         self.model = model
 

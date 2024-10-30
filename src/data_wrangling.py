@@ -32,6 +32,12 @@ class DataPreproStrategy(DataWrangling):
                           stores: pd.DataFrame) -> pd.DataFrame:
         """
         This handle function we allows preprocces we own data
+        Args:
+            features (pd.DataFrame): Features data
+            sales (pd.DataFrame): Sales data
+            stores (pd.DataFrame): Stores data
+        Returns:
+            DataFrame processed
         """
         # Convert the data to TimeSeries
         try:
@@ -77,6 +83,14 @@ class DataFeatureEngineering(DataWrangling):
     Class for data transformation strategy
     """
     def handle_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This handle function we allows to make a feature engineering 
+        to train machine learning time series model
+        Args:
+            data: Data to make feature engineering
+        Returns:
+            post feature engineering data
+        '''
         try:
             data['Date'] = pd.to_datetime(data.Date)
             data['ma1_sales'] = data.Weekly_Sales.rolling(window=2).mean() 
@@ -107,6 +121,10 @@ class DataSplitStrategy(DataWrangling):
             Data: Dataset to train the model
         Return:
             Dictionary with all splited dataset (taget and features)
+            with the following form:
+            {'y_timeseries':(train_y, test_y),
+            'future_cov':(train_future_cov,test_future_cov),
+            'past_cov':(train_past_cov, test_past_cov)}
         """
         try:
             y_ts = TimeSeries.from_group_dataframe(data,

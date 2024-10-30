@@ -14,6 +14,9 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] %(message)s')
 
 def evaluation_metrics() -> None:
+    '''
+    Function to make and track evaluation metrics
+    '''
     data = pd.read_csv('data/clean/clean_data.csv')
     data = feature_engineering_step(data)
     dataset = split_step(data)
@@ -61,6 +64,7 @@ def evaluation_metrics() -> None:
             for metric_name, value in metrics.items():
                 mlflow.log_metric(metric_name, value)
         logging.info('Log Metrics Done')
+        
     except Exception as e:
         logging.error(f'Error logging metrics: {e}')
 
