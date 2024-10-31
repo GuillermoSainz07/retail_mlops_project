@@ -8,8 +8,17 @@ from darts.models.forecasting.xgboost import XGBModel
 def model_forecasting(features:pd.DataFrame,
                       sales:pd.DataFrame,
                       stores:pd.DataFrame,
-                      n:int):
-    
+                      n:int) -> pd.DataFrame:
+    '''
+    Function to create predictions about the principal series
+    Args:
+        features: Features data pulled from AWS S3
+        sales: Sales data pulled from AWS S3
+        stores: Stores data pulled from AWS S3
+        n: N steps into the future
+    Return:
+        A dataframe with predictions
+    '''
     model = XGBModel(lags=[-2,-5],
                  lags_future_covariates=[0],
                  lags_past_covariates=[-1,-2,-5]).load('models/xgb_model.pkl')
@@ -36,8 +45,11 @@ def model_forecasting(features:pd.DataFrame,
                                                                     'Temperature','Fuel_Price','CPI','Unemployment'],
                                                   group_cols=['Store','Type'])
     
-    prediction = model.predict(n=n,
+    prediction = sum(model.predict(n=n,
                                series=y_ts,
                                future_covariates=future_cov_ts,
-                               past_covariates=past_cov_ts)
+                               past_covariates=past_cov_ts)).pd_dataframe()
+    
+    
+
     
