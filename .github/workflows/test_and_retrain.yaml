@@ -1,4 +1,4 @@
-name: Retrain WorkFlow
+name: Test and Retrain
 
 on:
   pull_request:
