@@ -37,6 +37,9 @@ jobs:
       - name: Run dvc pipeline
         run: dvc repro
 
+      - name: Run unit tests
+        run: python3 tests/data_test.py
+
       - name: Write Report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
