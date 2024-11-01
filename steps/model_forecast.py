@@ -50,6 +50,8 @@ def model_forecasting(features:pd.DataFrame,
                                future_covariates=future_cov_ts,
                                past_covariates=past_cov_ts)).pd_dataframe()
     
+    print(prediction)
+    
     
 
     
