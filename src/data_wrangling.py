@@ -3,11 +3,7 @@ from darts.timeseries import TimeSeries
 
 from abc import ABC, abstractmethod
 import logging
-from typing import Union, Tuple, Dict
-from typing_extensions import Annotated
-
-from .utils import train_test_timeseries
-
+from typing import  Dict
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s: %(message)s')
@@ -29,7 +25,8 @@ class DataPreproStrategy(DataWrangling):
     """
     def handle_data(self, features: pd.DataFrame,
                           sales: pd.DataFrame,
-                          stores: pd.DataFrame) -> pd.DataFrame:
+                          stores: pd.DataFrame,
+                          save_data:bool=True) -> pd.DataFrame:
         """
         This handle function we allows preprocces we own data
         Args:
@@ -68,7 +65,10 @@ class DataPreproStrategy(DataWrangling):
                                                         'B':1,
                                                         'C':2})
             
-            new_dataset.to_csv('data/clean/clean_data.csv')
+            if save_data:
+                new_dataset.to_csv('data/clean/clean_data.csv')
+            else:
+                pass
 
             logging.info("Preproccessing done")
 
@@ -127,6 +127,8 @@ class DataSplitStrategy(DataWrangling):
             'past_cov':(train_past_cov, test_past_cov)}
         """
         try:
+            from .utils import train_test_timeseries
+            
             y_ts = TimeSeries.from_group_dataframe(data,
                                        time_col='Date',
                                        value_cols=['Weekly_Sales'],

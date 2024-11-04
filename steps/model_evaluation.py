@@ -1,8 +1,4 @@
 from model_train import feature_engineering_step, split_step
-from darts.metrics.metrics import (coefficient_of_variation,
-                                   mse,
-                                   rmse,
-                                   mape)
 from darts.models.forecasting.xgboost import XGBModel
 from src.model_evaluation import ModelEvaluation
 import pandas as pd

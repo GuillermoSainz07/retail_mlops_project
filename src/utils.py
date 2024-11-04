@@ -1,10 +1,6 @@
 import json
 from darts.timeseries import TimeSeries
-from typing_extensions import Annotated
 from typing import Dict
-from darts.models.forecasting.xgboost import XGBModel
-from darts.metrics.metrics import mse,rmse,mape,coefficient_of_variation
-
 
 def make_report(metrics:dict) -> None:
     with open('report_metrics.json', 'w') as report:
