@@ -17,7 +17,6 @@ default_args = {'owner':'Guillermo Sainz',
 with DAG(dag_id='monthly_prediction_pipeline',
          default_args=default_args) as dag:
     
-
     def pred():
         data = pd.read_csv('data/clean/clean_data.csv')
         data = feature_engineering_step(data)
