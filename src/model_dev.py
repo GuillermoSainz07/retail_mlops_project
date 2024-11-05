@@ -26,6 +26,7 @@ class Model(ABC):
             name_experiment_intance: Models Name of experiment instance
         """
         import dagshub
+
         dagshub.init(repo_owner='GuillermoSainz07', repo_name='retail_mlops_project', mlflow=True)
 
         experiment_name = "Retail Forecasting"
