@@ -1,10 +1,6 @@
 import json
 from darts.timeseries import TimeSeries
-from typing_extensions import Annotated
 from typing import Dict
-from darts.models.forecasting.xgboost import XGBModel
-from darts.metrics.metrics import mse,rmse,mape,coefficient_of_variation
-
 
 def make_report(metrics:dict) -> None:
     with open('report_metrics.json', 'w') as report:
@@ -21,7 +17,10 @@ def train_test_timeseries(y:TimeSeries,
         future_cov: Future covariables that actually known in present
         past_cov: Covariables that we have to use their past values because we dont known their future value
     Return:
-        Dicctionary with data
+        Dicctionary with the following form:
+        {'y_timeseries':(train_y, test_y),
+            'future_cov':(train_future_cov,test_future_cov),
+            'past_cov':(train_past_cov, test_past_cov)}
     """
     
     train_y, test_y = [],[]

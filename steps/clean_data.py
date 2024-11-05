@@ -6,7 +6,7 @@ from typing import Dict
 
 def clean_data_step(features:pd.DataFrame,
                     sales:pd.DataFrame,
-                    stores:pd.DataFrame) -> None:
+                    stores:pd.DataFrame) -> tuple:
     """
     This function is used to clean, preprocessing and split the data.
     Returns:
@@ -14,15 +14,16 @@ def clean_data_step(features:pd.DataFrame,
     """
     # Data Preprocessing
     preprocessor = DataPreproStrategy()
-    preprocessor.handle_data(features, sales, stores)
+    data = preprocessor.handle_data(features, sales, stores)
+    return data
 
 if __name__ == "__main__":
     features, sales, stores = ingest_data_step(features_path='data/raw/features_data_set.csv',
                                                sales_path='data/raw/sales_data_set.csv',
                                                stores_path='data/raw/stores_data_set.csv')
-    clean_data_step(features,
-                    sales,
-                    stores)
+    data = clean_data_step(features,
+                           sales,
+                           stores)
 
 
  

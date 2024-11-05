@@ -3,11 +3,7 @@ from darts.timeseries import TimeSeries
 
 from abc import ABC, abstractmethod
 import logging
-from typing import Union, Tuple, Dict
-from typing_extensions import Annotated
-
-from .utils import train_test_timeseries
-
+from typing import  Dict
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s: %(message)s')
@@ -29,9 +25,16 @@ class DataPreproStrategy(DataWrangling):
     """
     def handle_data(self, features: pd.DataFrame,
                           sales: pd.DataFrame,
-                          stores: pd.DataFrame) -> pd.DataFrame:
+                          stores: pd.DataFrame,
+                          save_data:bool=True) -> pd.DataFrame:
         """
         This handle function we allows preprocces we own data
+        Args:
+            features (pd.DataFrame): Features data
+            sales (pd.DataFrame): Sales data
+            stores (pd.DataFrame): Stores data
+        Returns:
+            DataFrame processed
         """
         # Convert the data to TimeSeries
         try:
@@ -62,7 +65,10 @@ class DataPreproStrategy(DataWrangling):
                                                         'B':1,
                                                         'C':2})
             
-            new_dataset.to_csv('data/clean/clean_data.csv')
+            if save_data:
+                new_dataset.to_csv('data/clean/clean_data.csv')
+            else:
+                pass
 
             logging.info("Preproccessing done")
 
@@ -77,6 +83,14 @@ class DataFeatureEngineering(DataWrangling):
     Class for data transformation strategy
     """
     def handle_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This handle function we allows to make a feature engineering 
+        to train machine learning time series model
+        Args:
+            data: Data to make feature engineering
+        Returns:
+            post feature engineering data
+        '''
         try:
             data['Date'] = pd.to_datetime(data.Date)
             data['ma1_sales'] = data.Weekly_Sales.rolling(window=2).mean() 
@@ -107,8 +121,14 @@ class DataSplitStrategy(DataWrangling):
             Data: Dataset to train the model
         Return:
             Dictionary with all splited dataset (taget and features)
+            with the following form:
+            {'y_timeseries':(train_y, test_y),
+            'future_cov':(train_future_cov,test_future_cov),
+            'past_cov':(train_past_cov, test_past_cov)}
         """
         try:
+            from .utils import train_test_timeseries
+            
             y_ts = TimeSeries.from_group_dataframe(data,
                                        time_col='Date',
                                        value_cols=['Weekly_Sales'],

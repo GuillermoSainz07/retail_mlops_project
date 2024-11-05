@@ -1,6 +1,4 @@
-import mlflow 
 from typing import Dict
-from darts.models.forecasting.xgboost import XGBModel
 from src.model_dev import XGBForecaster
 from src.data_wrangling import DataFeatureEngineering, DataSplitStrategy
 import pandas as pd
@@ -29,10 +27,11 @@ def model_training(dataset:Dict[str,tuple]) -> None:
     past_cov_train, past_cov_test = dataset['past_cov']
     fut_cov_train, fut_cov_test = dataset['future_cov']
 
-    model = XGBForecaster()
-    model.train(y_train=y_train,
-                past_cov_train=past_cov_train,
-                fut_cov_train=fut_cov_train)
+    model = XGBForecaster(model_name='XGB Retail',
+                          name_experiment_intance='XGB Retail Experiment')
+    model = model.train(y_train=y_train,
+                    past_cov_train=past_cov_train,
+                    fut_cov_train=fut_cov_train)
 
 if __name__ == '__main__':
     data = pd.read_csv('data/clean/clean_data.csv')

@@ -7,6 +7,15 @@ logging.basicConfig(level=logging.INFO,
 def ingest_data_step(features_path:str,
                      sales_path:str,
                      stores_path:str) ->  tuple:
+    '''
+    Funtion to load the data
+    Args:
+        feature_path: Path of the features
+        sales_path: Path of the sales data
+        stores_path: Path of the stores data
+    Returns:
+        A tuple with features, sales and store data
+    '''
     try:
         features = pd.read_csv(features_path)
         sales = pd.read_csv(sales_path)
