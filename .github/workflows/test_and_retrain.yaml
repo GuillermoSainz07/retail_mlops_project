@@ -61,9 +61,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_KEY_ID2}}
           AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRECT_KEY2}}
         run: |
-          dvc add data/features_data_set.csv
-          dvc add data/sales_data_set.csv
-          dvc add data/stores_data_set.csv
+          dvc add data/raw/features_data_set.csv
+          dvc add data/raw/sales_data_set.csv
+          dvc add data/raw/stores_data_set.csv
           dvc commit 
           dvc push -r my_s3
   
