@@ -36,17 +36,17 @@ class ModelEvaluation:
                                     past_covariates=self.past_cov_test,
                                     future_covariates=self.fut_cov_test)
         
-            total_sales_prediction = sum(predictions)
+            self.total_sales_prediction = sum(predictions)
             total_sales_real = sum(self.y_test)
 
             mse_metric = mse(actual_series=total_sales_real,
-                            pred_series=total_sales_prediction)
+                            pred_series=self.total_sales_prediction)
             rmse_metric = rmse(actual_series=total_sales_real,
-                            pred_series=total_sales_prediction)
+                            pred_series=self.total_sales_prediction)
             mape_metric = mape(actual_series=total_sales_real,
-                            pred_series=total_sales_prediction)
+                            pred_series=self.total_sales_prediction)
             cv_metric = coefficient_of_variation(actual_series=total_sales_real,
-                            pred_series=total_sales_prediction)
+                            pred_series=self.total_sales_prediction)
             
             metrics = {'mse_metric':mse_metric,
                     'rmse_metric':rmse_metric,
@@ -58,6 +58,18 @@ class ModelEvaluation:
         except Exception as e:
             logging.error(f'Error in calculating metrics: {e}')
             raise e
+        
+    def make_test_horizon_plot(self):
+        
+        sum(self.y_train).plot(label='training')
+        sum(self.y_test).plot(label='testing')
+        #sum(predictions_lgbm).plot(label='prediction lgbm')
+        self.total_sales_prediction.plot(label='predictions')
+
+        plt.title('Test Forecasting')
+        plt.savefig("testing_plot.png")
+        plt.close()
+
 
     def make_backtest_plot(self,
                            past_cov_ts:TimeSeries,
@@ -86,7 +98,7 @@ class ModelEvaluation:
 
         sum(self.y_all).plot('Real Values')
         for p in forecaste_plots:
-            p.plot()
+            p.plot(default_formatting=False)
             legend = plt.legend()  # Crea la leyenda
             legend.set_visible(False)
 

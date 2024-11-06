@@ -22,7 +22,7 @@ def evaluation_metrics() -> None:
     with open('config.json','r') as config:
         config = json.load(config)
 
-    model = XGBModel(lags=[-2,-5],
+    model = XGBModel(lags=[-1,-2,-5],
                  lags_future_covariates=[0],
                  lags_past_covariates=[-1,-2,-5]).load('models/xgb_model.pkl')
     
@@ -50,6 +50,8 @@ def evaluation_metrics() -> None:
     evaluation_instance.make_backtest_plot(past_cov_ts=past_cov_ts,
                                            fut_cov_ts=fut_cov_ts)
     evaluation_instance.make_error_distribution_plot()
+
+    evaluation_instance.make_test_horizon_plot()
 
     with open('config.json', 'r') as config:
         config_dict = json.load(config)

@@ -61,7 +61,7 @@ class XGBForecaster(Model):
         
         with mlflow.start_run(run_name=f'Train {self.model_name}') as run:
         
-            model = XGBModel(lags=[-2,-5],
+            model = XGBModel(lags=[-1,-2,-5],
                     lags_future_covariates=[0],
                     lags_past_covariates=[-1,-2,-5])
             try:

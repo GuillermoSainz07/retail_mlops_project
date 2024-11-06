@@ -29,24 +29,24 @@ stages:
       size: 8350
     - path: src/model_dev.py
       hash: md5
-      md5: bd9a4ce7a1b8c6e50a8862db07378493
-      size: 4236
+      md5: bdcd054bad6f1e94337e1a5367ee18a2
+      size: 4239
     outs:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: cb50d37c1110c199ef1300199649c569
-      size: 415351
+      md5: dcda7c343a054ef9de675903625da887
+      size: 414847
   model_evaluation:
     cmd: python steps/model_evaluation.py
     deps:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: cb50d37c1110c199ef1300199649c569
-      size: 415351
+      md5: dcda7c343a054ef9de675903625da887
+      size: 414847
     - path: src/model_evaluation.py
       hash: md5
-      md5: 659280a73b85ea3dee844f9a723b8f3c
-      size: 4464
+      md5: 83b2e30bc9ff0d6c84e3d01a5e6b4fdc
+      size: 4900
     - path: steps/model_train.py
       hash: md5
       md5: cc5baf1d861828439edd598993f051a1
@@ -54,13 +54,13 @@ stages:
     outs:
     - path: backtest_plot.png
       hash: md5
-      md5: dac95b6217a314a67a95f69ca925ac67
-      size: 41587
+      md5: e5ffecbec8f0c6e31ba75806b90dfa63
+      size: 42593
     - path: error_dist_plot.png
       hash: md5
-      md5: d98cdb2719d47a17ccb155cc60774ad4
-      size: 11089
+      md5: 7c60927d0e71d299882b4668130b571a
+      size: 11759
     - path: report_metrics.json
       hash: md5
-      md5: f18a02f3d3b15a7be637e7ef2d7b6753
-      size: 135
+      md5: 13fc7a06a96244da0193b94a9dcecf32
+      size: 136
