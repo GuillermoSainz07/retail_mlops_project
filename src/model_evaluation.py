@@ -36,8 +36,8 @@ class ModelEvaluation:
                                     past_covariates=self.past_cov_test,
                                     future_covariates=self.fut_cov_test)
         
-            total_sales_prediction = sum(predictions[1:])
-            total_sales_real = sum(self.y_test[1:])
+            total_sales_prediction = sum(predictions)
+            total_sales_real = sum(self.y_test)
 
             mse_metric = mse(actual_series=total_sales_real,
                             pred_series=total_sales_prediction)
@@ -84,7 +84,7 @@ class ModelEvaluation:
 
             forecaste_plots.append(plot)
 
-        sum(self.y_all[1:]).plot('Real Values')
+        sum(self.y_all).plot('Real Values')
         for p in forecaste_plots:
             p.plot()
             legend = plt.legend()  # Crea la leyenda

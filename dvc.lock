@@ -5,8 +5,8 @@ stages:
     deps:
     - path: src/data_wrangling.py
       hash: md5
-      md5: 008c994a29a4e41d125d9ffd3ec980a2
-      size: 6266
+      md5: 8d4521d55c128855ba9d12de928b3c5d
+      size: 8350
     - path: steps/ingest_data.py
       hash: md5
       md5: 10c1420cd4a61494ced6205b5db3b078
@@ -25,42 +25,42 @@ stages:
       size: 411704
     - path: src/data_wrangling.py
       hash: md5
-      md5: 008c994a29a4e41d125d9ffd3ec980a2
-      size: 6266
+      md5: 8d4521d55c128855ba9d12de928b3c5d
+      size: 8350
     - path: src/model_dev.py
       hash: md5
-      md5: 26cd5dbb3610e29fe6d57fa62e65a4bf
-      size: 4234
+      md5: bd9a4ce7a1b8c6e50a8862db07378493
+      size: 4236
     outs:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 05d33b7a2beb1a4a77ced37c5df92537
-      size: 400723
+      md5: cb50d37c1110c199ef1300199649c569
+      size: 415351
   model_evaluation:
     cmd: python steps/model_evaluation.py
     deps:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 05d33b7a2beb1a4a77ced37c5df92537
-      size: 400723
+      md5: cb50d37c1110c199ef1300199649c569
+      size: 415351
     - path: src/model_evaluation.py
       hash: md5
-      md5: fd723b05eed61f3ed813f1ae2dfdc758
-      size: 4476
+      md5: 659280a73b85ea3dee844f9a723b8f3c
+      size: 4464
     - path: steps/model_train.py
       hash: md5
-      md5: 126643261fec0bf51ddc405363cf109f
-      size: 1549
+      md5: cc5baf1d861828439edd598993f051a1
+      size: 2236
     outs:
     - path: backtest_plot.png
       hash: md5
-      md5: ba8eda04ef086e5f17afef33d0745bb7
-      size: 48157
+      md5: dac95b6217a314a67a95f69ca925ac67
+      size: 41587
     - path: error_dist_plot.png
       hash: md5
-      md5: 2a36945c9cd48688e2cc9901f9ce7574
-      size: 10778
+      md5: d98cdb2719d47a17ccb155cc60774ad4
+      size: 11089
     - path: report_metrics.json
       hash: md5
-      md5: 2b00858b7974ef08090d47838b0b239d
-      size: 136
+      md5: f18a02f3d3b15a7be637e7ef2d7b6753
+      size: 135

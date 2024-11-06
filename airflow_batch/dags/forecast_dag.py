@@ -37,4 +37,23 @@ with DAG(dag_id='monthly_prediction_pipeline',
 
     start_task >> model_forecast_task >> end_task
 
+'''
+with DAG(dag_id='weekly_prediction_pipeline',
+         default_args=default_args) as dag:
 
+    start_start = EmptyOperator(task_id='start_task')
+
+    check_data = S3KeySensor(task_id='Check if data exist',
+                             bucket_name='Monthy-Data',
+                             key_name='ds_nodash',
+                             aws_conn_id='aws_connection_s3')
+    pull_data = 
+
+    make_prediciton = 
+
+    push_predictions = 
+
+    check_pushed_predictions = 
+     
+    end_task = EmptyOperator(task_id='end task')
+'''

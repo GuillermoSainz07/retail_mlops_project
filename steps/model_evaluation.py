@@ -14,8 +14,10 @@ def evaluation_metrics() -> None:
     Function to make and track evaluation metrics
     '''
     data = pd.read_csv('data/clean/clean_data.csv')
-    data = feature_engineering_step(data)
-    dataset = split_step(data)
+    y_ts,past_cov,future_cov  = feature_engineering_step(data)
+    dataset = split_step(y_ts=y_ts,
+                         past_cov=past_cov,
+                         future_cov=future_cov)
 
     with open('config.json','r') as config:
         config = json.load(config)
@@ -27,7 +29,6 @@ def evaluation_metrics() -> None:
     y_train, y_test = dataset['y_timeseries']
     past_cov_train, past_cov_test = dataset['past_cov']
     fut_cov_train, fut_cov_test = dataset['future_cov']
-    n_stepts = len(y_test)
     max_lag = min([l for l in config['MODEL_LAGS']])
 
     past_cov_ts = [past_cov_train[idx].append(pc_test) for idx, pc_test in enumerate(past_cov_test)]
