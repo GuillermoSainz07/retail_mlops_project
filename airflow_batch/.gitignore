@@ -1,8 +1,8 @@
 config/*
-!config/
+!config/.gitkeep
 
 logs/*
-!logs/
+!logs/.gitkeep
 
 plugins/*
-!plugins/
+!plugins/.gitkeep
