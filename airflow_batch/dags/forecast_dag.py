@@ -6,82 +6,182 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from airflow.hooks.S3_hook import S3Hook
 
+from darts.timeseries import TimeSeries
+from darts.dataprocessing.transformers.window_transformer import WindowTransformer
+from darts.utils.missing_values import fill_missing_values
+from darts.models.forecasting.xgboost import XGBModel
+
 import logging
 import pandas as pd
+import numpy as np
+import json
+
+import io
 
 import sys 
 sys.path.append('/opt/airflow/src')
-from data_wrangling import DataPreproStrategy, DataFeatureEngineering
+from data_wrangling import DataPreproStrategy
 
-from darts.models.forecasting.xgboost import XGBModel
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] %(message)s')
 
+# Configuración del DAG
 default_args = {'owner':'Guillermo Sainz',
                 'schedule_interval':'@once',
                 'start_date':days_ago(1),
                 'description':'Pipeline mensual de predicción de ML'}
 
+def batch_prediction_task():
+    # Conexión a S3 y descarga de datos
+    s3 = S3Hook('aws_connection_s3')
+    features_s3 = s3.get_key('features.csv', 'weekly-data-bucket').get()['Body'].read()
+    sales_s3 = s3.get_key('sales.csv', 'weekly-data-bucket').get()['Body'].read()
+    stores_s3 = s3.get_key('stores.csv', 'weekly-data-bucket').get()['Body'].read()
+    to_predict_s3 = s3.get_key('to_predict.csv', 'weekly-data-bucket').get()['Body'].read()
 
-def download_from_s3(key:str, bucket_name:str, local_path:str):
-    hook = S3Hook('aws_connection_s3')
-    file_name = hook.download_file(key=key,
-                                   bucket_name=bucket_name,
-                                   local_path=local_path)
-    return file_name
+    features = pd.read_csv(io.BytesIO(features_s3))
+    sales = pd.read_csv(io.BytesIO(sales_s3))
+    stores = pd.read_csv(io.BytesIO(stores_s3))
+    to_predict = pd.read_csv(io.BytesIO(to_predict_s3))
+    
+    assert all(col in to_predict.columns for col in ['Store', 'Date', 'IsHoliday']), 'Verifica las columnas de los datos'
+
+    date_format = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
+
+    assert np.all(features.Date.str.match(date_format)), 'Proporciona el formato correto para las fechas'
+
+    to_predict['Date'] = pd.to_datetime(to_predict['Date'], dayfirst=True)
+
+    prepro = DataPreproStrategy()
+    full_data = prepro.handle_data(features,
+                                   sales,
+                                   stores,
+                                   save_data=False)
+    
+    data_stack = pd.concat([full_data,to_predict])
+
+    data_stack['Type'] = data_stack.Store.map({row.Store:row.Type for _,row in stores.iterrows()})
+    data_stack['Type'] = data_stack.Type.map({'A':0,
+                                                'B':1,
+                                                'C':2})
+
+    data_stack['year'] = data_stack.Date.dt.year
+    data_stack['day'] =  data_stack.Date.dt.day
+    data_stack['month'] =  data_stack.Date.dt.month
 
 
-with DAG(dag_id='monthly_prediction_pipeline',
+    window_transformer = WindowTransformer([{'function':'mean',
+                                         'mode':'rolling',
+                                         'components':'Weekly_Sales',
+                                         'window':2,
+                                         'closed':'left'},
+                        
+                                         {'function':'mean',
+                                         'mode':'rolling',
+                                         'components':'Weekly_Sales',
+                                         'window':5,
+                                         'closed':'left'},
+                                         
+                                         {'function':'std',
+                                         'mode':'rolling',
+                                         'components':'Weekly_Sales',
+                                         'window':2,
+                                         'closed':'left'},
+                                         
+                                         {'function':'std',
+                                         'mode':'rolling',
+                                         'components':'Weekly_Sales',
+                                         'window':5,
+                                         'closed':'left'}],
+                                         keep_non_transformed=True)
+        
+    y_ts = TimeSeries.from_group_dataframe(data_stack,
+                                            time_col='Date',
+                                            value_cols=['Weekly_Sales'],
+                                            group_cols=['Store','Type'])
+
+    future_cov_ts = TimeSeries.from_group_dataframe(data_stack,
+                                                    time_col='Date',
+                                                    value_cols=['month','day','year','IsHoliday'],
+                                                    group_cols=['Store','Type'])
+
+    past_cov_ts = TimeSeries.from_group_dataframe(data_stack,
+                                                    time_col='Date',
+                                                    value_cols=['Temperature','Fuel_Price','CPI','Unemployment','Weekly_Sales'],
+                                                    group_cols=['Store','Type']) 
+    
+    past_cov_ts = window_transformer.transform(past_cov_ts)
+    past_cov_ts = [past_cov_ts[i].drop_columns('Weekly_Sales') for i in range(len(past_cov_ts))]
+
+
+    past_cov_ts = [fill_missing_values(past_cov_ts[i]) for i in range(len(past_cov_ts))]
+
+    with open('/opt/airflow/config.json','r') as config_file:
+        config = json.load(config_file)
+        max_lag = min([l for l in config['MODEL_LAGS']]) - 1
+    
+    y_for_prediction = [y_ts[i][:-1] for i in range(len(y_ts))]
+    fut_for_prediction = [future_cov_ts[i][-1] for i in range(len(future_cov_ts))]
+    past_for_prediction = [past_cov_ts[i][max_lag:] for i in range(len(past_cov_ts))]
+
+    logging.info('Loanding Model')
+    model = XGBModel(lags=[-1,-2,-5],
+                    lags_future_covariates=[0],
+                    lags_past_covariates=[-1,-2,-5]).load('/opt/airflow/models/xgb_model.pkl')
+    logging.info('Model Loaded')
+    
+    logging.info('Making prediction  ...')
+    total_sales_prediction = sum(model.predict(n=1,
+                                series=y_for_prediction,
+                                past_covariates=past_for_prediction,
+                                future_covariates=fut_for_prediction)).pd_dataframe().reset_index()
+    logging.info('Prediction Done')
+    logging.info(total_sales_prediction)
+    
+    csv_buffer = io.StringIO()
+    total_sales_prediction.to_csv(csv_buffer, index=False)
+    s3.get_conn().put_object(Bucket='weekly-predictions-bucket', Key='predictions.csv', Body=csv_buffer.getvalue())
+    
+# =================DAG==============================
+with DAG(dag_id='monthly_pred',
          default_args=default_args) as dag:
     
-    def pred():
-        logging.info('Pulling data from AWS S3')
-        model = XGBModel(lags=[-2,-5],
-                 lags_future_covariates=[0],
-                 lags_past_covariates=[-1,-2,-5]).load('/opt/airflow/models/xgb_model.pkl')
-        logging.info('Model inference DONE')
-        
     start_task = EmptyOperator(task_id='start_task')
 
-    check_features = S3KeySensor(task_id='Check-features-exist',
-                                bucket_name='weekly-data-bucket',
-                                bucket_key='features.csv',
-                                aws_conn_id='aws_connection_s3')
+    check_features = S3KeySensor(
+        task_id='Check-features-exist',
+        bucket_name='weekly-data-bucket',
+        bucket_key='features.csv',
+        aws_conn_id='aws_connection_s3'
+    )
     
-    check_sales = S3KeySensor(task_id='Check-sales-exist',
-                                bucket_name='weekly-data-bucket',
-                                bucket_key='sales.csv',
-                                aws_conn_id='aws_connection_s3')
+    check_sales = S3KeySensor(
+        task_id='Check-sales-exist',
+        bucket_name='weekly-data-bucket',
+        bucket_key='sales.csv',
+        aws_conn_id='aws_connection_s3'
+    )
     
-    check_stores = S3KeySensor(task_id='Check-store-exist',
-                                bucket_name='weekly-data-bucket',
-                                bucket_key='stores.csv',
-                                aws_conn_id='aws_connection_s3')
+    check_stores = S3KeySensor(
+        task_id='Check-store-exist',
+        bucket_name='weekly-data-bucket',
+        bucket_key='stores.csv',
+        aws_conn_id='aws_connection_s3'
+    )
     
+    check_pred = S3KeySensor(
+        task_id='Check-preds-exist',
+        bucket_name='weekly-data-bucket',
+        bucket_key='to_predict.csv',
+        aws_conn_id='aws_connection_s3'
+    )
 
-    download_features = PythonOperator(task_id='Download_features',
-                                       python_callable=download_from_s3,
-                                       op_kwargs={'key':'features.csv',
-                                                  'bucket_name':'weekly-data-bucket',
-                                                  'local_path':'/opt/airflow'})
-    
-    download_sales = PythonOperator(task_id='Download_sales',
-                                    python_callable=download_from_s3,
-                                    op_kwargs={'key':'sales.csv',
-                                                  'bucket_name':'weekly-data-bucket',
-                                                  'local_path':'/opt/airflow'})
-    
-    download_stores = PythonOperator(task_id='Download_stores',
-                                     python_callable=download_from_s3,
-                                     op_kwargs={'key':'stores.csv',
-                                                  'bucket_name':'weekly-data-bucket',
-                                                  'local_path':'/opt/airflow'})
-
-
-    model_forecast_task = PythonOperator(task_id='model_forecast_task',
-                                         python_callable=pred)
-    
+    # Definir la tarea del DAG
+    batch_prediction = PythonOperator(
+        task_id='batch_prediction',
+        python_callable=batch_prediction_task
+    )
     end_task = EmptyOperator(task_id='end_task')
 
-    start_task >> (check_features, check_sales, check_stores) >> download_features >> download_sales >> download_stores >> model_forecast_task >> end_task
+    start_task >> [check_features, check_sales, check_stores, check_pred] >> batch_prediction >> end_task
