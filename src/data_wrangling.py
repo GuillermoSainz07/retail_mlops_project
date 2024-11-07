@@ -1,9 +1,11 @@
 import pandas as pd
 from darts.timeseries import TimeSeries
+from darts.dataprocessing.transformers.window_transformer import WindowTransformer
 
 from abc import ABC, abstractmethod
 import logging
 from typing import  Dict
+from typing_extensions import Annotated
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s: %(message)s')
@@ -82,7 +84,9 @@ class DataFeatureEngineering(DataWrangling):
     """
     Class for data transformation strategy
     """
-    def handle_data(self, data: pd.DataFrame) -> pd.DataFrame:
+    def handle_data(self, data: pd.DataFrame) -> tuple[Annotated[TimeSeries,'y_series'],
+                                                       Annotated[TimeSeries,'past_covariates_series'],
+                                                       Annotated[TimeSeries,'future_covariates_series']]:
         '''
         This handle function we allows to make a feature engineering 
         to train machine learning time series model
@@ -92,20 +96,64 @@ class DataFeatureEngineering(DataWrangling):
             post feature engineering data
         '''
         try:
+            logging.info('Feature engineering ...')
             data['Date'] = pd.to_datetime(data.Date)
-            data['ma1_sales'] = data.Weekly_Sales.rolling(window=2).mean() 
-            data['ma2_sales'] = data.Weekly_Sales.rolling(window=3).mean()
-            data['ma5_sales'] = data.Weekly_Sales.rolling(window=5).mean()
-            data['std_sales'] = data.Weekly_Sales.rolling(window=2).std()
-
             data['month'] = data.Date.dt.month
             data['day'] = data.Date.dt.day
             data['year'] = data.Date.dt.year
 
-            data = data.dropna()
-            logging.info('Feature Engineering Done')
+            y_ts = TimeSeries.from_group_dataframe(data,
+                                       time_col='Date',
+                                       value_cols=['Weekly_Sales'],
+                                       group_cols=['Store','Type'])
 
-            return data
+            future_cov_ts = TimeSeries.from_group_dataframe(data,
+                                                            time_col='Date',
+                                                            value_cols=['month','day','year','IsHoliday'],
+                                                            group_cols=['Store','Type'])
+
+            past_cov_ts = TimeSeries.from_group_dataframe(data,
+                                                        time_col='Date',
+                                                        value_cols=['Temperature','Fuel_Price','CPI','Unemployment',
+                                                                    'Weekly_Sales'],
+                                                        group_cols=['Store','Type']) 
+            
+            logging.info("DataFrame transformed into timeseries object")
+
+        except Exception as e:
+            logging.error(f"Error in transforming data: {e}")
+            raise e
+        
+        try:
+            logging.info('Add agregation metrics')
+            window_transformer = WindowTransformer([{'function':'mean',
+                                                    'mode':'rolling',
+                                                    'components':'Weekly_Sales',
+                                                    'window':2,
+                                                    'closed':'left'},
+                                                    {'function':'mean',
+                                                    'mode':'rolling',
+                                                    'components':'Weekly_Sales',
+                                                    'window':5,
+                                                    'closed':'left'},
+                                                    {'function':'std',
+                                                    'mode':'rolling',
+                                                    'components':'Weekly_Sales',
+                                                    'window':2,
+                                                    'closed':'left'},
+                                                    {'function':'std',
+                                                    'mode':'rolling',
+                                                    'components':'Weekly_Sales',
+                                                    'window':5,
+                                                    'closed':'left'}],
+                                                    keep_non_transformed=True)
+            
+            past_cov_ts = window_transformer.transform(past_cov_ts)
+            past_cov_ts = [past_cov_ts[i].drop_columns('Weekly_Sales') for i in range(len(past_cov_ts))]
+
+            logging.info('Feature Engineering Done')     
+
+            return y_ts, past_cov_ts, future_cov_ts
         except Exception as e:
             logging.error(f"Error in feature engineering: {e}")
             raise e
@@ -114,7 +162,9 @@ class DataSplitStrategy(DataWrangling):
     """
     Class for data splitting strategy
     """
-    def handle_data(self, data: pd.DataFrame) -> Dict[str,tuple[TimeSeries]]:
+    def handle_data(self, y_ts: TimeSeries,
+                          past_cov_ts:TimeSeries,
+                          future_cov_ts: TimeSeries) -> Dict[str,tuple[TimeSeries]]:
         """
         Method to split data into train, val, test data
         Args:
@@ -128,25 +178,7 @@ class DataSplitStrategy(DataWrangling):
         """
         try:
             from .utils import train_test_timeseries
-            
-            y_ts = TimeSeries.from_group_dataframe(data,
-                                       time_col='Date',
-                                       value_cols=['Weekly_Sales'],
-                                       group_cols=['Store','Type'])
-
-            future_cov_ts = TimeSeries.from_group_dataframe(data,
-                                                            time_col='Date',
-                                                            value_cols=['month','day','year','IsHoliday'],
-                                                            group_cols=['Store','Type'])
-
-            past_cov_ts = TimeSeries.from_group_dataframe(data,
-                                                        time_col='Date',
-                                                        value_cols=['ma1_sales','ma2_sales','ma5_sales','std_sales',
-                                                                    'Temperature','Fuel_Price','CPI','Unemployment'],
-                                                        group_cols=['Store','Type']) 
-            
-            logging.info("DataFrame transformed into timeseries object")
-
+        
             dataset_timeseries = train_test_timeseries(y_ts,
                                                        future_cov_ts,
                                                        past_cov_ts)

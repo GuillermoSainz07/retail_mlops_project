@@ -1,4 +1,6 @@
 from typing import Dict
+from typing_extensions import Annotated
+from darts.timeseries import TimeSeries
 from src.model_dev import XGBForecaster
 from src.data_wrangling import DataFeatureEngineering, DataSplitStrategy
 import pandas as pd
@@ -10,15 +12,22 @@ import pandas as pd
 ### 1 punto en el futuro, y tu lag maximo es de 3, deberias pasar un vector
 ### de longitud 1 + 3 = 4
 
-def feature_engineering_step(df:pd.DataFrame)-> pd.DataFrame:
+def feature_engineering_step(df:pd.DataFrame)-> tuple[Annotated[TimeSeries,'y_series'],
+                                                       Annotated[TimeSeries,'past_covariates_series'],
+                                                       Annotated[TimeSeries,'future_covariates_series']]:
     fe_object = DataFeatureEngineering()
-    data = fe_object.handle_data(df)
+    y_ts, past_cov, future_cov = fe_object.handle_data(df)
 
-    return data
+    return  y_ts, past_cov, future_cov
 
-def split_step(df:pd.DataFrame) -> Dict:
+def split_step(y_ts:TimeSeries,
+               past_cov:TimeSeries,
+               future_cov:TimeSeries) -> Dict:
+    
     splitter = DataSplitStrategy()
-    data = splitter.handle_data(df)
+    data = splitter.handle_data(y_ts=y_ts,
+                                past_cov_ts=past_cov,
+                                future_cov_ts=future_cov)
 
     return data
 
@@ -35,8 +44,10 @@ def model_training(dataset:Dict[str,tuple]) -> None:
 
 if __name__ == '__main__':
     data = pd.read_csv('data/clean/clean_data.csv')
-    data = feature_engineering_step(data)
-    dataset = split_step(data)
+    y_ts,past_cov,future_cov  = feature_engineering_step(data)
+    dataset = split_step(y_ts=y_ts,
+                         past_cov=past_cov,
+                         future_cov=future_cov)
     model_training(dataset)
 
 

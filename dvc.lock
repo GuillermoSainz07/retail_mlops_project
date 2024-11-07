@@ -5,8 +5,8 @@ stages:
     deps:
     - path: src/data_wrangling.py
       hash: md5
-      md5: 008c994a29a4e41d125d9ffd3ec980a2
-      size: 6266
+      md5: 8d4521d55c128855ba9d12de928b3c5d
+      size: 8350
     - path: steps/ingest_data.py
       hash: md5
       md5: 10c1420cd4a61494ced6205b5db3b078
@@ -25,42 +25,46 @@ stages:
       size: 411704
     - path: src/data_wrangling.py
       hash: md5
-      md5: 008c994a29a4e41d125d9ffd3ec980a2
-      size: 6266
+      md5: 8d4521d55c128855ba9d12de928b3c5d
+      size: 8350
     - path: src/model_dev.py
       hash: md5
-      md5: 26cd5dbb3610e29fe6d57fa62e65a4bf
-      size: 4234
+      md5: 6221b37f681c37cba2a3c84ce06e9ab2
+      size: 4726
     outs:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 05d33b7a2beb1a4a77ced37c5df92537
-      size: 400723
+      md5: dcda7c343a054ef9de675903625da887
+      size: 414847
   model_evaluation:
     cmd: python steps/model_evaluation.py
     deps:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 05d33b7a2beb1a4a77ced37c5df92537
-      size: 400723
+      md5: dcda7c343a054ef9de675903625da887
+      size: 414847
     - path: src/model_evaluation.py
       hash: md5
-      md5: fd723b05eed61f3ed813f1ae2dfdc758
-      size: 4476
+      md5: 83b2e30bc9ff0d6c84e3d01a5e6b4fdc
+      size: 4900
     - path: steps/model_train.py
       hash: md5
-      md5: 126643261fec0bf51ddc405363cf109f
-      size: 1549
+      md5: cc5baf1d861828439edd598993f051a1
+      size: 2236
     outs:
     - path: backtest_plot.png
       hash: md5
-      md5: ba8eda04ef086e5f17afef33d0745bb7
-      size: 48157
+      md5: e5ffecbec8f0c6e31ba75806b90dfa63
+      size: 42593
     - path: error_dist_plot.png
       hash: md5
-      md5: 2a36945c9cd48688e2cc9901f9ce7574
-      size: 10778
+      md5: 7c60927d0e71d299882b4668130b571a
+      size: 11759
     - path: report_metrics.json
       hash: md5
-      md5: 2b00858b7974ef08090d47838b0b239d
+      md5: 13fc7a06a96244da0193b94a9dcecf32
       size: 136
+    - path: testing_plot.png
+      hash: md5
+      md5: 2c2727bb9ee9488f264b40c32db880be
+      size: 37002

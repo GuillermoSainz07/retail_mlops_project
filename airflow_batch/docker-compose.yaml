@@ -79,8 +79,9 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ../models:/opt/airflow/models
     - ../src:/opt/airflow/src
-    #- ${AIRFLOW_PROJ_DIR:-.}/requirements.txt:/opt/airflow/requirements.txt
-  #command: >
+    - ../config.json:/opt/airflow/config.json
+    - ${AIRFLOW_PROJ_DIR:-.}/requirements.txt:/opt/airflow/requirements.txt
+  command: >
     #bash -c "pip install -r /opt/airflow/requirements.txt"
 
   user: "${AIRFLOW_UID:-50000}:0"

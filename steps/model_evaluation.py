@@ -1,6 +1,7 @@
 from model_train import feature_engineering_step, split_step
 from darts.models.forecasting.xgboost import XGBModel
 from src.model_evaluation import ModelEvaluation
+from src.model_dev import XGBForecaster
 import pandas as pd
 import json
 import mlflow
@@ -13,21 +14,20 @@ def evaluation_metrics() -> None:
     '''
     Function to make and track evaluation metrics
     '''
-    data = pd.read_csv('data/clean/clean_data.csv')
-    data = feature_engineering_step(data)
-    dataset = split_step(data)
-
     with open('config.json','r') as config:
         config = json.load(config)
 
-    model = XGBModel(lags=[-2,-5],
-                 lags_future_covariates=[0],
-                 lags_past_covariates=[-1,-2,-5]).load('models/xgb_model.pkl')
+    data = pd.read_csv('data/clean/clean_data.csv')
+    y_ts,past_cov,future_cov  = feature_engineering_step(data)
+    dataset = split_step(y_ts=y_ts,
+                         past_cov=past_cov,
+                         future_cov=future_cov)
+    
+    model = XGBForecaster(create_experiment=False).model_instance.load('models/xgb_model.pkl')
     
     y_train, y_test = dataset['y_timeseries']
     past_cov_train, past_cov_test = dataset['past_cov']
     fut_cov_train, fut_cov_test = dataset['future_cov']
-    n_stepts = len(y_test)
     max_lag = min([l for l in config['MODEL_LAGS']])
 
     past_cov_ts = [past_cov_train[idx].append(pc_test) for idx, pc_test in enumerate(past_cov_test)]
@@ -50,13 +50,13 @@ def evaluation_metrics() -> None:
                                            fut_cov_ts=fut_cov_ts)
     evaluation_instance.make_error_distribution_plot()
 
-    with open('config.json', 'r') as config:
-        config_dict = json.load(config)
+    evaluation_instance.make_test_horizon_plot()
+
     try:
         import dagshub
         dagshub.init(repo_owner='GuillermoSainz07', repo_name='retail_mlops_project', mlflow=True)
         
-        with mlflow.start_run(run_id=config_dict["RUN_ID"]):
+        with mlflow.start_run(run_id=config["RUN_ID"]):
             for metric_name, value in metrics.items():
                 mlflow.log_metric(metric_name, value)
                 

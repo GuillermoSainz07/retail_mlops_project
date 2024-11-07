@@ -33,9 +33,12 @@ class DataTest(unittest.TestCase):
         Test to ensure that there is no data leakage
         """
         data = pd.read_csv('data/clean/clean_data.csv')
-        data = feature_engineering_step(data)
-        dataset = split_step(data)
 
+        y_ts,past_cov,future_cov  = feature_engineering_step(data)
+        dataset = split_step(y_ts=y_ts,
+                              past_cov=past_cov,
+                              future_cov=future_cov)
+        
         y_train, y_test = dataset['y_timeseries']
         futcov_train, futcov_test = dataset['future_cov']
         pastcov_train, pastcov_test = dataset['past_cov']

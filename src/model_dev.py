@@ -1,4 +1,3 @@
-import mlflow
 from abc import ABC, abstractmethod
 from typing import List, Dict
 import logging
@@ -6,80 +5,90 @@ import logging
 from darts.models.forecasting.xgboost import XGBModel
 from darts.timeseries import TimeSeries
 import json
-from .model_wrapper import DartsModelWrapper
-
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s: %(message)s')
 
-class Model(ABC):
+class DartsModel(ABC):
 
     def __init__(self,
-                 model_name:str,
-                 name_experiment_intance:str):
+                 model_name:str=None,
+                 name_experiment_intance:str=None,
+                 model_instance=None,
+                 create_experiment=True):
         
         """
         Construct Method
         Args:
             model_name: Name to register model
-            run_id: Runs ID of experiment
             name_experiment_intance: Models Name of experiment instance
         """
-        import dagshub
+        if create_experiment:
+            import dagshub
+            import mlflow
 
-        dagshub.init(repo_owner='GuillermoSainz07', repo_name='retail_mlops_project', mlflow=True)
+            dagshub.init(repo_owner='GuillermoSainz07', repo_name='retail_mlops_project', mlflow=True)
 
-        experiment_name = "Retail Forecasting"
-        try:
-            mlflow.create_experiment(experiment_name, artifact_location="s3://ml-experiments-artifacts")
-        except:
+            experiment_name = "Retail Forecasting"
+            self.client = mlflow.MlflowClient()
+            try:
+                mlflow.create_experiment(experiment_name, artifact_location="s3://ml-experiments-artifacts")
+            except:
+                pass
+
+            mlflow.set_experiment(experiment_name)
+        else:
             pass
 
-        mlflow.set_experiment(experiment_name)
-
-        self.model_name = model_name
-        self.client = mlflow.MlflowClient()
         self.name_experiment_intance = name_experiment_intance
+        self.model_name = model_name
+        self.model_instance = model_instance
 
     @abstractmethod
     def train(self, X, y):
         pass
 
 
-class XGBForecaster(Model):
+class XGBForecaster(DartsModel):
     def __init__(self,
-                 model_name:str,
-                 name_experiment_intance:str):
+                 model_name:str=None,
+                 name_experiment_intance:str=None,
+                 create_experiment=True):
         
         super().__init__(model_name=model_name,
-                         name_experiment_intance=name_experiment_intance)
-         
+                         name_experiment_intance=name_experiment_intance,
+                         create_experiment=create_experiment)
+        
+        self.model_instance = XGBModel(lags=[-1,-2,-5],
+                                       lags_future_covariates=[0],
+                                       lags_past_covariates=[-1,-2,-5])
     def train(self,
               y_train:List[TimeSeries],
               past_cov_train:List[TimeSeries],
               fut_cov_train:List[TimeSeries]):
         
+        import mlflow
+
         with mlflow.start_run(run_name=f'Train {self.model_name}') as run:
-        
-            model = XGBModel(lags=[-2,-5],
-                    lags_future_covariates=[0],
-                    lags_past_covariates=[-1,-2,-5])
+    
             try:
-                model.fit(series=y_train,
-                        past_covariates=past_cov_train,
-                        future_covariates=fut_cov_train)
+                self.model_instance.fit(series=y_train,
+                                        past_covariates=past_cov_train,
+                                        future_covariates=fut_cov_train)
                 
                 logging.info('Model Trained')
 
-                model.save("models/xgb_model.pkl")
+                self.model_instance.save("models/xgb_model.pkl")
 
             except Exception as e:
                 logging.error(f"Error training model: {e}")
                 raise e
             
-            try:                
+            try:
+                from .model_wrapper import DartsModelWrapper
+
                 mlflow.pyfunc.log_model(self.name_experiment_intance,
-                                        python_model=DartsModelWrapper(model=model))
+                                        python_model=DartsModelWrapper(model=self.model_instance))
                 
 
                 run_id = run.info.run_id
@@ -114,7 +123,7 @@ class XGBForecaster(Model):
                 logging.error(f"Error tracking model: {e}")
                 pass
 
-        return model
+        return self.model_instance
 
         
         
