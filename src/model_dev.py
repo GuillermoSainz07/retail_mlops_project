@@ -22,7 +22,6 @@ class Model(ABC):
         Construct Method
         Args:
             model_name: Name to register model
-            run_id: Runs ID of experiment
             name_experiment_intance: Models Name of experiment instance
         """
         import dagshub

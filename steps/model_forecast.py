@@ -97,7 +97,7 @@ def model_forecasting(input_data:pd.DataFrame,
     fut_for_prediction = [future_cov_ts[i][-1] for i in range(len(future_cov_ts))]
     past_for_prediction = [past_cov_ts[i][max_lag:] for i in range(len(past_cov_ts))]
 
-    model = XGBModel(lags=[-2,-5],
+    model = XGBModel(lags=[-1,-2,-5],
                     lags_future_covariates=[0],
                     lags_past_covariates=[-1,-2,-5]).load('models/xgb_model.pkl')
     
@@ -108,7 +108,6 @@ def model_forecasting(input_data:pd.DataFrame,
     
     return total_sales_prediction
 
-'''
 if __name__ == '__main__':
     features = pd.read_csv('data/raw/features_data_set.csv')
     sales = pd.read_csv('data/raw/sales_data_set.csv')
@@ -119,5 +118,5 @@ if __name__ == '__main__':
                                    features=features,
                                    sales=sales,
                                    stores=stores)
-    print(prediction)
-'''
+    print(prediction.reset_index())
+    prediction.reset_index().to_csv("C:/Users/PC/Downloads/to_s3_data/predictions.csv")

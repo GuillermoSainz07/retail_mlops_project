@@ -144,7 +144,7 @@ def batch_prediction_task():
     s3.get_conn().put_object(Bucket='weekly-predictions-bucket', Key='predictions.csv', Body=csv_buffer.getvalue())
     
 # =================DAG==============================
-with DAG(dag_id='monthly_pred',
+with DAG(dag_id='monthly_prediction_pipeline',
          default_args=default_args) as dag:
     
     start_task = EmptyOperator(task_id='start_task')
