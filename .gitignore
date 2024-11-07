@@ -167,3 +167,4 @@ data/raw/stores_data_set.csv
 /report_metrics.json
 /backtest_plot.png
 /error_dist_plot.png
+/testing_plot.png

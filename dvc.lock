@@ -29,8 +29,8 @@ stages:
       size: 8350
     - path: src/model_dev.py
       hash: md5
-      md5: bdcd054bad6f1e94337e1a5367ee18a2
-      size: 4239
+      md5: 6221b37f681c37cba2a3c84ce06e9ab2
+      size: 4726
     outs:
     - path: models/xgb_model.pkl
       hash: md5
@@ -64,3 +64,7 @@ stages:
       hash: md5
       md5: 13fc7a06a96244da0193b94a9dcecf32
       size: 136
+    - path: testing_plot.png
+      hash: md5
+      md5: 2c2727bb9ee9488f264b40c32db880be
+      size: 37002

@@ -17,11 +17,11 @@ import numpy as np
 import json
 
 import io
-
 import sys 
-sys.path.append('/opt/airflow/src')
-from data_wrangling import DataPreproStrategy
 
+sys.path.append('/opt/airflow/src')
+from data_wrangling import DataPreproStrategy, DataFeatureEngineering
+from model_dev import XGBForecaster
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] %(message)s')
@@ -33,7 +33,11 @@ default_args = {'owner':'Guillermo Sainz',
                 'description':'Pipeline mensual de predicción de ML'}
 
 def batch_prediction_task():
-    # Conexión a S3 y descarga de datos
+
+    with open('/opt/airflow/config.json','r') as config_file:
+        config = json.load(config_file)
+        max_lag = min([l for l in config['MODEL_LAGS']]) - 1
+
     s3 = S3Hook('aws_connection_s3')
     features_s3 = s3.get_key('features.csv', 'weekly-data-bucket').get()['Body'].read()
     sales_s3 = s3.get_key('sales.csv', 'weekly-data-bucket').get()['Body'].read()
@@ -63,72 +67,19 @@ def batch_prediction_task():
 
     data_stack['Type'] = data_stack.Store.map({row.Store:row.Type for _,row in stores.iterrows()})
     data_stack['Type'] = data_stack.Type.map({'A':0,
-                                                'B':1,
-                                                'C':2})
-
-    data_stack['year'] = data_stack.Date.dt.year
-    data_stack['day'] =  data_stack.Date.dt.day
-    data_stack['month'] =  data_stack.Date.dt.month
-
-
-    window_transformer = WindowTransformer([{'function':'mean',
-                                         'mode':'rolling',
-                                         'components':'Weekly_Sales',
-                                         'window':2,
-                                         'closed':'left'},
-                        
-                                         {'function':'mean',
-                                         'mode':'rolling',
-                                         'components':'Weekly_Sales',
-                                         'window':5,
-                                         'closed':'left'},
-                                         
-                                         {'function':'std',
-                                         'mode':'rolling',
-                                         'components':'Weekly_Sales',
-                                         'window':2,
-                                         'closed':'left'},
-                                         
-                                         {'function':'std',
-                                         'mode':'rolling',
-                                         'components':'Weekly_Sales',
-                                         'window':5,
-                                         'closed':'left'}],
-                                         keep_non_transformed=True)
-        
-    y_ts = TimeSeries.from_group_dataframe(data_stack,
-                                            time_col='Date',
-                                            value_cols=['Weekly_Sales'],
-                                            group_cols=['Store','Type'])
-
-    future_cov_ts = TimeSeries.from_group_dataframe(data_stack,
-                                                    time_col='Date',
-                                                    value_cols=['month','day','year','IsHoliday'],
-                                                    group_cols=['Store','Type'])
-
-    past_cov_ts = TimeSeries.from_group_dataframe(data_stack,
-                                                    time_col='Date',
-                                                    value_cols=['Temperature','Fuel_Price','CPI','Unemployment','Weekly_Sales'],
-                                                    group_cols=['Store','Type']) 
-    
-    past_cov_ts = window_transformer.transform(past_cov_ts)
-    past_cov_ts = [past_cov_ts[i].drop_columns('Weekly_Sales') for i in range(len(past_cov_ts))]
-
+                                              'B':1,
+                                              'C':2})
+    engineering = DataFeatureEngineering()
+    y_ts,past_cov_ts,future_cov_ts = engineering.handle_data(data_stack)
 
     past_cov_ts = [fill_missing_values(past_cov_ts[i]) for i in range(len(past_cov_ts))]
-
-    with open('/opt/airflow/config.json','r') as config_file:
-        config = json.load(config_file)
-        max_lag = min([l for l in config['MODEL_LAGS']]) - 1
     
     y_for_prediction = [y_ts[i][:-1] for i in range(len(y_ts))]
     fut_for_prediction = [future_cov_ts[i][-1] for i in range(len(future_cov_ts))]
     past_for_prediction = [past_cov_ts[i][max_lag:] for i in range(len(past_cov_ts))]
 
-    logging.info('Loanding Model')
-    model = XGBModel(lags=[-1,-2,-5],
-                    lags_future_covariates=[0],
-                    lags_past_covariates=[-1,-2,-5]).load('/opt/airflow/models/xgb_model.pkl')
+    logging.info('Loanding Model')    
+    model = XGBForecaster(create_experiment=False).model_instance.load('/opt/airflow/models/xgb_model.pkl')
     logging.info('Model Loaded')
     
     logging.info('Making prediction  ...')
@@ -139,6 +90,7 @@ def batch_prediction_task():
     logging.info('Prediction Done')
     logging.info(total_sales_prediction)
     
+    logging.info('Saving predictions')
     csv_buffer = io.StringIO()
     total_sales_prediction.to_csv(csv_buffer, index=False)
     s3.get_conn().put_object(Bucket='weekly-predictions-bucket', Key='predictions.csv', Body=csv_buffer.getvalue())
@@ -177,7 +129,6 @@ with DAG(dag_id='monthly_prediction_pipeline',
         aws_conn_id='aws_connection_s3'
     )
 
-    # Definir la tarea del DAG
     batch_prediction = PythonOperator(
         task_id='batch_prediction',
         python_callable=batch_prediction_task

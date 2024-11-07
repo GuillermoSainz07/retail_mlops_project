@@ -1,0 +1,8 @@
+config/*
+!config/
+
+logs/*
+!logs/
+
+plugins/*
+!plugins/
