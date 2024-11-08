@@ -49,8 +49,8 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
-           git fetch --prune
-           dvc metrics diff main --show-md >> report.md
+           git fetch --prune --unshallow
+           dvc metrics diff --show-md main >> report.md
 
            echo '## Historical Forecast' >> report.md
            dvc plots show --target backtest_plot.png >> report.md
