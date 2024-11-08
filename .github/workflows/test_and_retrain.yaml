@@ -50,8 +50,7 @@ jobs:
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
            git fetch --prune --unshallow
-           dvc metrics diff --show-md main >> report.md
-
+           dvc metrics show >> report.md
            echo '## Historical Forecast' >> report.md
            dvc plots show --target backtest_plot.png >> report.md
            echo '## Error Distribution' >> report.md
