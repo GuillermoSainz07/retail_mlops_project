@@ -51,11 +51,11 @@ jobs:
            echo '# Retail TimeSeries Forescast Report' >> report.md
            cat report_metrics.json >> report.md
            echo '## Historical Forecast' >> report.md
-           echo '![](backtest_plot.png "Backtest plot")' >> report.md
+           echo '![](./backtest_plot.png "Backtest plot")' >> report.md
            echo '## Error Distribution' >> report.md
-           echo '![](error_dist_plot.png "Error (RMSE) Distribution")' >> report.md
+           echo '![](./error_dist_plot.png "Error (RMSE) Distribution")' >> report.md
            echo '## Testing Forecasting' >> report.md
-           echo '![](testing_plot.png "Testing Predictions")' >> report.md
+           echo '![](./testing_plot.png "Testing Predictions")' >> report.md
            cml comment create report.md
 
       - name: Update data tracking
