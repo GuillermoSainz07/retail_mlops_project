@@ -49,13 +49,15 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
-           cat report_metrics.json >> report.md
+           git fetch --prune
+           dvc metrics diff main --show-md >> report.md
+
            echo '## Historical Forecast' >> report.md
-           echo '![](./backtest_plot.png "Backtest plot")' >> report.md
+           dvc plots show --target backtest_plot.png >> report.md
            echo '## Error Distribution' >> report.md
-           echo '![](./error_dist_plot.png "Error (RMSE) Distribution")' >> report.md
+           dvc plots show --target error_dist_plot.png >> report.md
            echo '## Testing Forecasting' >> report.md
-           echo '![](./testing_plot.png "Testing Predictions")' >> report.md
+           dvc plots show --target testing_plot.png >> report.md
            cml comment create report.md
 
       - name: Update data tracking
