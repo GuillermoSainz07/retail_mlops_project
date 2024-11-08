@@ -52,11 +52,11 @@ jobs:
            git fetch --prune --unshallow
            dvc metrics show >> report.md
            echo '## Historical Forecast' >> report.md
-           dvc plots show --target backtest_plot.png >> report.md
+           dvc plots show backtest_plot.png >> report.md
            echo '## Error Distribution' >> report.md
-           dvc plots show --target error_dist_plot.png >> report.md
+           dvc plots show error_dist_plot.png >> report.md
            echo '## Testing Forecasting' >> report.md
-           dvc plots show --target testing_plot.png >> report.md
+           dvc plots show testing_plot.png >> report.md
            cml comment create report.md
 
       - name: Update data tracking
