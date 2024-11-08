@@ -20,8 +20,13 @@ stages:
     - models/xgb_model.pkl
     - steps/model_train.py
     - src/model_evaluation.py
-    outs:
-    - report_metrics.json
-    - backtest_plot.png
-    - error_dist_plot.png
-    - testing_plot.png
+    metrics:
+    - report_metrics.json:
+        cache: false
+    plots:
+    - backtest_plot.png:
+        cache: false
+    - error_dist_plot.png:
+        cache: false
+    - testing_plot.png:
+        cache: false
