@@ -168,3 +168,4 @@ data/raw/stores_data_set.csv
 /backtest_plot.png
 /error_dist_plot.png
 /testing_plot.png
+*.pem
