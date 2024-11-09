@@ -44,18 +44,17 @@ jobs:
       - name: Run unit tests
         run: python3 tests/data_test.py
 
-      - name: Checks images
-        run: ls -la
-
       - name: Write Report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
            dvc metrics show >> report.md
            echo '## Historical Forecast' >> report.md
            dvc plots show backtest_plot.png >> report.md
-           cml publish --md ./backtest_plot.png >> report.md
+           cml-publish ${GITHUB_WORKSPACE}/backtest_plot.png --md >> report.md
+           
            echo '## Error Distribution' >> report.md
            dvc plots show error_dist_plot.png >> report.md
            echo '## Testing Forecasting' >> report.md
