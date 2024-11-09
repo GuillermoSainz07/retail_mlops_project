@@ -58,13 +58,11 @@ jobs:
            echo '# Retail TimeSeries Forescast Report' >> report.md
            dvc metrics show >> report.md
            echo '## Historical Forecast' >> report.md
-           dvc plots show backtest_plot.png >> report.md
            cml-publish ${GITHUB_WORKSPACE}/backtest_plot.png --md >> report.md
-
            echo '## Error Distribution' >> report.md
-           dvc plots show error_dist_plot.png >> report.md
+           cml-publish ${GITHUB_WORKSPACE}/error_dist_plot.png --md >> report.md
            echo '## Testing Forecasting' >> report.md
-           dvc plots show testing_plot.png >> report.md
+           cml-publish ${GITHUB_WORKSPACE}/testing_plot.png --md >> report.md
            cml comment create report.md
 
       - name: Update data tracking
