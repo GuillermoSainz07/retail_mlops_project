@@ -136,3 +136,4 @@ with DAG(dag_id='monthly_prediction_pipeline',
     end_task = EmptyOperator(task_id='end_task')
 
     start_task >> [check_features, check_sales, check_stores, check_pred] >> batch_prediction >> end_task
+    
