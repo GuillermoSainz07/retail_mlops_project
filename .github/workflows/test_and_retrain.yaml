@@ -18,8 +18,14 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
+
       - name: Setup CML
         uses: iterative/setup-cml@v1
+
+      - name: Update Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16'
 
       - name: Intall dependencies
         run: pip install -r requirements.txt
@@ -46,13 +52,15 @@ jobs:
 
       - name: Write Report
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
            echo '# Retail TimeSeries Forescast Report' >> report.md
            dvc metrics show >> report.md
            echo '## Historical Forecast' >> report.md
            dvc plots show backtest_plot.png >> report.md
-           echo "![](../backtest_plot.png)" >> report.md
+           cml-publish ${GITHUB_WORKSPACE}/backtest_plot.png --md >> report.md
+
            echo '## Error Distribution' >> report.md
            dvc plots show error_dist_plot.png >> report.md
            echo '## Testing Forecasting' >> report.md
