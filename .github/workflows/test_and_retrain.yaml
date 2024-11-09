@@ -44,6 +44,9 @@ jobs:
       - name: Run unit tests
         run: python3 tests/data_test.py
 
+      - name: Checks images
+        run: echo ls -la
+        
       - name: Write Report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
