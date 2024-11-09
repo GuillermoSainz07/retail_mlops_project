@@ -55,7 +55,7 @@ jobs:
            dvc metrics show >> report.md
            echo '## Historical Forecast' >> report.md
            dvc plots show backtest_plot.png >> report.md
-           cml publish --md ../backtest_plot.png >> report.md
+           cml publish --md ./backtest_plot.png >> report.md
            echo '## Error Distribution' >> report.md
            dvc plots show error_dist_plot.png >> report.md
            echo '## Testing Forecasting' >> report.md
