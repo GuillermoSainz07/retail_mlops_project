@@ -22,3 +22,5 @@
     * Use of dockerfile and docker compose in this project in order to make it reportable and easily deployable.
 * Creation of CI/CD pipeline with github actions
     * Use of github actions in order to automate the deployment of the project in a cloud environment
+
+You will be able to monitor the monthly forecast DAG from the web interface provided by airflow from the public IPv4 on the port configured for airflow in docker compose 8080, the instance will be closed to avoid generating costs.
