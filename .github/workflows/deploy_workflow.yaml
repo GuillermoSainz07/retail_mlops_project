@@ -1,0 +1,52 @@
+name: Deploy in EC2 Instance
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Update Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+
+      - name: Conect to EC2 Instance
+        env:
+          SHH_CONECTION: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          echo "$SHH_CONECTION" > /tmp/ssh_key.pem
+          chmod 600 /tmp/ssh_key.pem
+          ssh -o "StrictHostKeyChecking=no"-i /tmp/ssh_key.pem ubuntu@ec2-18-189-193-36.us-east-2.compute.amazonaws.com
+
+      - name: Update Repository
+        run: |
+          cd retail_mlops_project
+          git checkout main
+          git pull origin main
+
+      - name: Deploy airflow dags
+        run: |
+          cd airflow_batch
+          docker compose down -v
+          docker compose up --build
+
+
+
+        
+        
+
+
+
+  
